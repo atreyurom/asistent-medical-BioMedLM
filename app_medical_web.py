@@ -2,12 +2,41 @@
 import streamlit as st
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from googletrans import Translator
 import os
 import time
+import requests
+import urllib.parse
 
 # Configurare pentru server cloud
 os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+
+# Funcție de traducere stabilă
+def translate_text(text, src='en', dest='ro'):
+    """
+    Traduce text folosind MyMemory Translation API (gratuit și stabil)
+    """
+    try:
+        # URL encode text
+        encoded_text = urllib.parse.quote(text)
+        
+        # Folosim MyMemory Translation API
+        url = f"https://api.mymemory.translated.net/get?q={encoded_text}&langpair={src}|{dest}"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if 'responseData' in data and 'translatedText' in data['responseData']:
+                translated = data['responseData']['translatedText']
+                # Curăță textul dacă este necesar
+                if translated.strip():
+                    return translated
+        
+        # Dacă traducerea eșuează, returnăm textul original
+        return text
+        
+    except Exception as e:
+        # În caz de eroare, returnăm textul original
+        return text
 
 # Configurare pagină
 st.set_page_config(
@@ -135,7 +164,7 @@ with st.sidebar:
             with st.spinner("🔄 Se încarcă modelul BiomedLM... Vă rugăm așteptați"):
                 start_time = time.time()
                 try:
-                    # TOKEN-UL TĂU HF - MODIFICĂ AICI DACA E NEVOIE
+                    # TOKEN-UL TĂU HF
                     HF_TOKEN = "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"
                     
                     # Încarcă tokenizer-ul
@@ -251,10 +280,12 @@ with col1:
                         if auto_translate and english_response:
                             st.markdown('<div class="info-box"><strong>🔄 Se traduce în română...</strong></div>', unsafe_allow_html=True)
                             try:
-                                translator = Translator()
-                                final_response = translator.translate(english_response, src='en', dest='ro').text
-                            except:
-                                final_response = english_response + "\n\n⚠️ Traducerea automată a eșuat - răspuns în engleză"
+                                final_response = translate_text(english_response, src='en', dest='ro')
+                                # Verifică dacă traducerea a funcționat
+                                if final_response == english_response:
+                                    final_response = english_response + "\n\n💡 *Traducerea nu a putut fi efectuată - răspuns în engleză*"
+                            except Exception as e:
+                                final_response = english_response + f"\n\n⚠️ Eroare traducere - răspuns în engleză"
                         else:
                             final_response = english_response
                         
@@ -348,23 +379,3 @@ st.markdown(
     "</div>", 
     unsafe_allow_html=True
 )
-
-# Informații tehnice (collapse)
-with st.expander("🔧 Informații Tehnice", expanded=False):
-    col_tech1, col_tech2 = st.columns(2)
-    
-    with col_tech1:
-        st.write("**📊 Statistici:**")
-        st.write(f"- Model BiomedLM încărcat: {st.session_state.model_loaded}")
-        st.write(f"- Număr întrebări: {len(st.session_state.history)}")
-        if st.session_state.loading_time:
-            st.write(f"- Timp încărcare: {st.session_state.loading_time:.1f}s")
-        st.write(f"- Traducere activă: {auto_translate}")
-    
-    with col_tech2:
-        st.write("**⚙️ Configurație:**")
-        st.write(f"- Platformă: Streamlit Cloud")
-        st.write(f"- Model: Stanford BiomedLM")
-        st.write(f"- Dispozitiv: CPU optimizat")
-        st.write(f"- Memorie: Float16")
-        st.write(f"- Brand: RONOS.RO")
