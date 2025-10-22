@@ -165,7 +165,7 @@ with st.sidebar:
                 start_time = time.time()
                 try:
                     # TOKEN-UL TĂU HF
-                    HF_TOKEN = "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"
+                    HF_TOKEN = "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"
                     
                     # Încarcă tokenizer-ul
                     st.session_state.tokenizer = AutoTokenizer.from_pretrained(
