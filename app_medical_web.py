@@ -1,4 +1,4 @@
-# app_medical_web.py - ASISTENT MEDICAL BIOMEDLM
+# app_medical_web.py - ASISTENT MEDICAL BIOMEDLM - RONOS.RO
 import streamlit as st
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -133,7 +133,7 @@ st.markdown("""
 # Header principal
 st.markdown('<h1 class="main-header">🧬 Asistent Medical Intelligent</h1>', unsafe_allow_html=True)
 st.markdown('<h2 class="brand-name">BiomedLM</h2>', unsafe_allow_html=True)
-st.markdown('<h3 class="website-url"></h3>', unsafe_allow_html=True)
+st.markdown('<h3 class="website-url">RONOS.RO</h3>', unsafe_allow_html=True)
 
 # Initializare sesiune
 if 'history' not in st.session_state:
@@ -150,7 +150,7 @@ if 'loading_time' not in st.session_state:
 # Sidebar pentru setări
 with st.sidebar:
     # Brand box în sidebar
-    st.markdown('<div class="brand-box"><strong>🧬 BiomedLM</strong><br>Asistență Medicală Avansată<br><em></em></div>', unsafe_allow_html=True)
+    st.markdown('<div class="brand-box"><strong>🧬 BiomedLM</strong><br>Asistență Medicală Avansată<br><em>RONOS.RO</em></div>', unsafe_allow_html=True)
     
     # Tech box
     st.markdown('<div class="tech-box"><strong>🤖 Microsoft BioGPT</strong><br>Model Medical de Ultimă Oră<br><em>Acces Public</em></div>', unsafe_allow_html=True)
@@ -371,7 +371,7 @@ with col2:
     st.markdown("---")
     st.markdown("### 🌐 Despre Noi")
     st.info("""
-    **BiomedLM - **
+    **BiomedLM - RONOS.RO**
     
     Platformă avansată de asistență medicală 
     bazată pe inteligență artificială.
@@ -388,10 +388,10 @@ st.markdown(
     "<div style='text-align: center; color: #7f8c8d; font-style: italic; padding: 20px;'>"
     "🧬 <strong>BiomedLM - Asistent Medical Intelligent</strong><br>"
     "Powered by <strong>Microsoft BioGPT-Large</strong><br>"
-    "O soluție <strong>O</strong> pentru sănătatea dumneavoastră<br>"
+    "O soluție <strong>RONOS.RO</strong> pentru sănătatea dumneavoastră<br>"
     "Pentru uz educațional și informativ • "
     "<em>Consultați întotdeauna personalul medical calificat pentru diagnostic și tratament</em><br>"
-    "<strong></strong>"
+    "<strong>www.ronos.ro</strong>"
     "</div>", 
     unsafe_allow_html=True
 )
@@ -414,4 +414,4 @@ with st.expander("🔧 Informații Tehnice", expanded=False):
         st.write(f"- Model: Microsoft BioGPT-Large")
         st.write(f"- Acces: Public")
         st.write(f"- Memorie: Float16")
-        st.write(f"- Brand: ")
+        st.write(f"- Brand: RONOS.RO")
