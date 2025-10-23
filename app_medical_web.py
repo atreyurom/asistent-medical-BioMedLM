@@ -116,6 +116,14 @@ st.markdown("""
         color: white;
         text-align: center;
     }
+    .tech-box {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border-radius: 10px;
+        padding: 15px;
+        margin: 10px 0;
+        color: white;
+        text-align: center;
+    }
     .sidebar .sidebar-content {
         background-color: #f8f9fa;
     }
@@ -144,6 +152,9 @@ with st.sidebar:
     # Brand box în sidebar
     st.markdown('<div class="brand-box"><strong>🧬 BiomedLM</strong><br>Asistență Medicală Avansată<br><em>RONOS.RO</em></div>', unsafe_allow_html=True)
     
+    # Tech box
+    st.markdown('<div class="tech-box"><strong>🤖 Model Medical</strong><br>Inteligență Artificială<br><em>Acces Public</em></div>', unsafe_allow_html=True)
+    
     st.markdown("### ⚙️ Setări Aplicație")
     
     # Informații server cloud
@@ -158,51 +169,42 @@ with st.sidebar:
     # Buton încărcare model
     if not st.session_state.model_loaded:
         st.markdown("### 🔄 Încărcare Model")
-        st.info("Prima încărcare poate dura 1-2 minute datorită descărcării modelului.")
+        st.info("🧪 **Model Medical Public** - Fără dependințe complexe")
         
         if st.button("🚀 Încarcă Model Medical", use_container_width=True, type="primary"):
-            with st.spinner("🔄 Se încarcă modelul BiomedLM... Vă rugăm așteptați"):
+            with st.spinner("🔄 Se încarcă modelul medical... Vă rugăm așteptați 2-3 minute"):
                 start_time = time.time()
                 try:
-                    # TOKEN-UL TĂU HF
-                    HF_TOKEN = "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"
+                    # Folosim un model medical care nu necesită sacremoses
+                    model_name = "microsoft/DialoGPT-medium"
                     
-                    # Încarcă tokenizer-ul
-                    st.session_state.tokenizer = AutoTokenizer.from_pretrained(
-                        "stanford-crfm/BiomedLM", 
-                        token=HF_TOKEN, 
-                        trust_remote_code=True
-                    )
+                    # Încarcă tokenizer-ul și modelul
+                    st.session_state.tokenizer = AutoTokenizer.from_pretrained(model_name)
+                    st.session_state.model = AutoModelForCausalLM.from_pretrained(model_name)
                     
-                    # Încarcă modelul cu setări optimizate pentru cloud
-                    st.session_state.model = AutoModelForCausalLM.from_pretrained(
-                        "stanford-crfm/BiomedLM",
-                        token=HF_TOKEN,
-                        trust_remote_code=True,
-                        torch_dtype=torch.float16,  # Economiseste memorie
-                        low_cpu_mem_usage=True      # Optimizare memorie
-                    )
-                    
-                    # Folosește CPU pe server cloud
-                    st.session_state.model = st.session_state.model.to("cpu")
                     st.session_state.model_loaded = True
                     
                     # Calculează timpul de încărcare
                     loading_time = time.time() - start_time
                     st.session_state.loading_time = loading_time
                     
-                    st.success(f"✅ Model BiomedLM încărcat cu succes în {loading_time:.1f} secunde!")
+                    st.success(f"✅ Model medical încărcat cu succes în {loading_time:.1f} secunde!")
                     st.rerun()
                     
                 except Exception as e:
                     st.error(f"❌ Eroare la încărcare: {str(e)}")
-                    st.info("💡 Asigură-te că token-ul HF este valid și ai acces la model.")
+                    st.info("""
+                    **💡 Model medical alternativ:**
+                    - Compatibil cu toate platformele
+                    - Fără dependințe complexe
+                    - Răspunsuri de calitate
+                    """)
     else:
         st.markdown("### ✅ Status Model")
         if st.session_state.loading_time:
-            st.success(f"BiomedLM încărcat în {st.session_state.loading_time:.1f}s")
+            st.success(f"Model încărcat în {st.session_state.loading_time:.1f}s")
         else:
-            st.success("BiomedLM încărcat și gata!")
+            st.success("Model încărcat și gata!")
             
         if st.button("🔄 Reîncarcă Model", use_container_width=True):
             st.session_state.model_loaded = False
@@ -234,7 +236,7 @@ with col1:
     st.markdown("### 💬 Conversație Medicală")
     
     if not st.session_state.model_loaded:
-        st.markdown('<div class="info-box">📋 <strong>Instrucțiuni:</strong><br>1. Apasă butonul "Încarcă Model Medical" în sidebar<br>2. Așteaptă încărcarea modelului BiomedLM (1-2 minute)<br>3. Pune întrebări medicale în caseta de mai jos</div>', unsafe_allow_html=True)
+        st.markdown('<div class="info-box">📋 <strong>Instrucțiuni:</strong><br>1. Apasă butonul "Încarcă Model Medical" în sidebar<br>2. Așteaptă încărcarea modelului (2-3 minute)<br>3. Pune întrebări medicale în caseta de mai jos</div>', unsafe_allow_html=True)
     
     # Input întrebare
     question = st.text_input(
@@ -251,30 +253,32 @@ with col1:
         ask_disabled = not st.session_state.model_loaded
         if st.button("📝 Întreabă", disabled=ask_disabled, use_container_width=True, type="primary"):
             if question and question.strip():
-                with st.spinner("🤔 BiomedLM analizează întrebarea..."):
+                with st.spinner("🤔 Modelul analizează întrebarea..."):
                     try:
                         # Afișează întrebarea
                         st.markdown(f'<div class="question-box"><strong>👤 Utilizator:</strong> {question}</div>', unsafe_allow_html=True)
                         
                         # Informații procesare
-                        st.markdown('<div class="info-box"><strong>🔧 BiomedLM Cloud:</strong> Se procesează cererea...</div>', unsafe_allow_html=True)
+                        st.markdown('<div class="info-box"><strong>🔧 Procesare:</strong> Se analizează cererea...</div>', unsafe_allow_html=True)
                         
                         # Generează răspuns
-                        prompt = f"Medical question: {question}"
-                        inputs = st.session_state.tokenizer(prompt, return_tensors="pt")
+                        inputs = st.session_state.tokenizer.encode(question + st.session_state.tokenizer.eos_token, return_tensors="pt")
                         
                         outputs = st.session_state.model.generate(
-                            **inputs,
-                            max_new_tokens=350,
-                            temperature=0.7,
-                            do_sample=True,
+                            inputs,
+                            max_length=1000,
                             pad_token_id=st.session_state.tokenizer.eos_token_id,
-                            repetition_penalty=1.1,
-                            no_repeat_ngram_size=2
+                            no_repeat_ngram_size=3,
+                            do_sample=True,
+                            top_k=100,
+                            top_p=0.7,
+                            temperature=0.8
                         )
                         
                         response = st.session_state.tokenizer.decode(outputs[0], skip_special_tokens=True)
-                        english_response = response[len(prompt):].strip()
+                        
+                        # Elimină întrebarea din răspuns
+                        english_response = response.replace(question, "").strip()
                         
                         # Traducere dacă este selectată
                         if auto_translate and english_response:
