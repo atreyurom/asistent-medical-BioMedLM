@@ -153,7 +153,7 @@ with st.sidebar:
     st.markdown('<div class="brand-box"><strong>🧬 BiomedLM</strong><br>Asistență Medicală Avansată<br><em>RONOS.RO</em></div>', unsafe_allow_html=True)
     
     # Tech box
-    st.markdown('<div class="tech-box"><strong>🤖 Model Medical</strong><br>Inteligență Artificială<br><em>Acces Public</em></div>', unsafe_allow_html=True)
+    st.markdown('<div class="tech-box"><strong>🤖 Microsoft BioGPT</strong><br>Model Medical de Ultimă Oră<br><em>Acces Public</em></div>', unsafe_allow_html=True)
     
     st.markdown("### ⚙️ Setări Aplicație")
     
@@ -169,18 +169,29 @@ with st.sidebar:
     # Buton încărcare model
     if not st.session_state.model_loaded:
         st.markdown("### 🔄 Încărcare Model")
-        st.info("🧪 **Model Medical Public** - Fără dependințe complexe")
+        st.info("🧪 **Model Medical Public** - Microsoft BioGPT-Large")
         
         if st.button("🚀 Încarcă Model Medical", use_container_width=True, type="primary"):
-            with st.spinner("🔄 Se încarcă modelul medical... Vă rugăm așteptați 2-3 minute"):
+            with st.spinner("🔄 Se încarcă modelul BioGPT... Vă rugăm așteptați 2-3 minute"):
                 start_time = time.time()
                 try:
-                    # Folosim un model medical care nu necesită sacremoses
-                    model_name = "microsoft/DialoGPT-medium"
+                    # Folosim BioGPT-Large - model medical public de la Microsoft
+                    model_name = "microsoft/BioGPT-Large"
                     
-                    # Încarcă tokenizer-ul și modelul
-                    st.session_state.tokenizer = AutoTokenizer.from_pretrained(model_name)
-                    st.session_state.model = AutoModelForCausalLM.from_pretrained(model_name)
+                    # Încarcă tokenizer-ul
+                    st.session_state.tokenizer = AutoTokenizer.from_pretrained(
+                        model_name,
+                        trust_remote_code=True
+                    )
+                    
+                    # Încarcă modelul cu setări optimizate pentru cloud
+                    st.session_state.model = AutoModelForCausalLM.from_pretrained(
+                        model_name,
+                        trust_remote_code=True,
+                        torch_dtype=torch.float16,
+                        low_cpu_mem_usage=True,
+                        device_map="auto"
+                    )
                     
                     st.session_state.model_loaded = True
                     
@@ -188,23 +199,24 @@ with st.sidebar:
                     loading_time = time.time() - start_time
                     st.session_state.loading_time = loading_time
                     
-                    st.success(f"✅ Model medical încărcat cu succes în {loading_time:.1f} secunde!")
+                    st.success(f"✅ BioGPT-Large încărcat cu succes în {loading_time:.1f} secunde!")
                     st.rerun()
                     
                 except Exception as e:
                     st.error(f"❌ Eroare la încărcare: {str(e)}")
                     st.info("""
-                    **💡 Model medical alternativ:**
-                    - Compatibil cu toate platformele
-                    - Fără dependințe complexe
-                    - Răspunsuri de calitate
+                    **🤖 Microsoft BioGPT-Large:**
+                    - Model medical de ultimă generație
+                    - Antrenat pe texte științifice și medicale
+                    - Complet public și gratuit
+                    - Excelent pentru întrebări medicale
                     """)
     else:
         st.markdown("### ✅ Status Model")
         if st.session_state.loading_time:
-            st.success(f"Model încărcat în {st.session_state.loading_time:.1f}s")
+            st.success(f"BioGPT-Large încărcat în {st.session_state.loading_time:.1f}s")
         else:
-            st.success("Model încărcat și gata!")
+            st.success("BioGPT-Large încărcat și gata!")
             
         if st.button("🔄 Reîncarcă Model", use_container_width=True):
             st.session_state.model_loaded = False
@@ -236,7 +248,7 @@ with col1:
     st.markdown("### 💬 Conversație Medicală")
     
     if not st.session_state.model_loaded:
-        st.markdown('<div class="info-box">📋 <strong>Instrucțiuni:</strong><br>1. Apasă butonul "Încarcă Model Medical" în sidebar<br>2. Așteaptă încărcarea modelului (2-3 minute)<br>3. Pune întrebări medicale în caseta de mai jos</div>', unsafe_allow_html=True)
+        st.markdown('<div class="info-box">📋 <strong>Instrucțiuni:</strong><br>1. Apasă butonul "Încarcă Model Medical" în sidebar<br>2. Așteaptă încărcarea modelului BioGPT (2-3 minute)<br>3. Pune întrebări medicale în caseta de mai jos</div>', unsafe_allow_html=True)
     
     # Input întrebare
     question = st.text_input(
@@ -253,32 +265,30 @@ with col1:
         ask_disabled = not st.session_state.model_loaded
         if st.button("📝 Întreabă", disabled=ask_disabled, use_container_width=True, type="primary"):
             if question and question.strip():
-                with st.spinner("🤔 Modelul analizează întrebarea..."):
+                with st.spinner("🤔 BioGPT analizează întrebarea..."):
                     try:
                         # Afișează întrebarea
                         st.markdown(f'<div class="question-box"><strong>👤 Utilizator:</strong> {question}</div>', unsafe_allow_html=True)
                         
                         # Informații procesare
-                        st.markdown('<div class="info-box"><strong>🔧 Procesare:</strong> Se analizează cererea...</div>', unsafe_allow_html=True)
+                        st.markdown('<div class="info-box"><strong>🔧 BioGPT Cloud:</strong> Se procesează cererea...</div>', unsafe_allow_html=True)
                         
                         # Generează răspuns
-                        inputs = st.session_state.tokenizer.encode(question + st.session_state.tokenizer.eos_token, return_tensors="pt")
+                        prompt = f"Medical question: {question}"
+                        inputs = st.session_state.tokenizer(prompt, return_tensors="pt")
                         
                         outputs = st.session_state.model.generate(
-                            inputs,
-                            max_length=1000,
-                            pad_token_id=st.session_state.tokenizer.eos_token_id,
-                            no_repeat_ngram_size=3,
+                            **inputs,
+                            max_new_tokens=400,
+                            temperature=0.7,
                             do_sample=True,
-                            top_k=100,
-                            top_p=0.7,
-                            temperature=0.8
+                            pad_token_id=st.session_state.tokenizer.eos_token_id,
+                            repetition_penalty=1.1,
+                            no_repeat_ngram_size=2
                         )
                         
                         response = st.session_state.tokenizer.decode(outputs[0], skip_special_tokens=True)
-                        
-                        # Elimină întrebarea din răspuns
-                        english_response = response.replace(question, "").strip()
+                        english_response = response[len(prompt):].strip()
                         
                         # Traducere dacă este selectată
                         if auto_translate and english_response:
@@ -296,7 +306,7 @@ with col1:
                         # Afișează răspunsul
                         st.markdown(
                             f'<div class="response-box" style="font-size: {font_size}px;">'
-                            f'<strong>🤖 BiomedLM:</strong><br><br>{final_response}'
+                            f'<strong>🤖 BiomedLM (BioGPT):</strong><br><br>{final_response}'
                             f'</div>', 
                             unsafe_allow_html=True
                         )
@@ -369,6 +379,7 @@ with col2:
     • Asistență medicală 24/7
     • Răspunsuri personalizate
     • Tehnologie de ultimă oră
+    • Model Microsoft BioGPT-Large
     """)
 
 # Footer profesional
@@ -376,6 +387,7 @@ st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: #7f8c8d; font-style: italic; padding: 20px;'>"
     "🧬 <strong>BiomedLM - Asistent Medical Intelligent</strong><br>"
+    "Powered by <strong>Microsoft BioGPT-Large</strong><br>"
     "O soluție <strong>RONOS.RO</strong> pentru sănătatea dumneavoastră<br>"
     "Pentru uz educațional și informativ • "
     "<em>Consultați întotdeauna personalul medical calificat pentru diagnostic și tratament</em><br>"
@@ -383,3 +395,23 @@ st.markdown(
     "</div>", 
     unsafe_allow_html=True
 )
+
+# Informații tehnice (collapse)
+with st.expander("🔧 Informații Tehnice", expanded=False):
+    col_tech1, col_tech2 = st.columns(2)
+    
+    with col_tech1:
+        st.write("**📊 Statistici:**")
+        st.write(f"- Model BioGPT încărcat: {st.session_state.model_loaded}")
+        st.write(f"- Număr întrebări: {len(st.session_state.history)}")
+        if st.session_state.loading_time:
+            st.write(f"- Timp încărcare: {st.session_state.loading_time:.1f}s")
+        st.write(f"- Traducere activă: {auto_translate}")
+    
+    with col_tech2:
+        st.write("**⚙️ Configurație:**")
+        st.write(f"- Platformă: Streamlit Cloud")
+        st.write(f"- Model: Microsoft BioGPT-Large")
+        st.write(f"- Acces: Public")
+        st.write(f"- Memorie: Float16")
+        st.write(f"- Brand: RONOS.RO")
