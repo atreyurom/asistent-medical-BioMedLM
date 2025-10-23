@@ -23,7 +23,7 @@ st.markdown("""
 # Header
 st.markdown('<h1 class="main-header">🧬 Asistent Medical Intelligent</h1>', unsafe_allow_html=True)
 st.markdown('<h2 class="brand-name">BiomedLM</h2>', unsafe_allow_html=True)
-st.markdown('<h3 style="text-align: center; color: #3498db;">RONOS.RO</h3>', unsafe_allow_html=True)
+st.markdown('<h3 style="text-align: center; color: #3498db;">____.RO</h3>', unsafe_allow_html=True)
 
 # Initializare
 if 'history' not in st.session_state:
@@ -115,4 +115,5 @@ if st.session_state.history:
 
 # Footer
 st.markdown("---")
-st.markdown("*Asistent medical BiomedLM - RONOS.RO • Pentru uz informativ*")
+st.markdown("*Asistent medical BiomedLM - ____.RO • Pentru uz informativ*")
+
